@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: ${TEST_DATABASE_URL:jdbc:postgresql://localhost:5432/tutorbot_test}
+    username: ${TEST_DATABASE_USERNAME:tutorbot}
+    password: ${TEST_DATABASE_PASSWORD:tutorbot}
+  flyway:
+    clean-disabled: false
+
+telegram:
+  token: test-token
+  mode: none
+
+ai:
+  provider: fake
+
+scheduler:
+  enabled: false
+  tick-secret: test-secret

@@ -1,0 +1,37 @@
+# Local run: docker compose up --build
+# Needs a .env file (copy .env.example) with at least TELEGRAM_BOT_TOKEN and AI_API_KEY.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tutorbot
+      POSTGRES_USER: tutorbot
+      POSTGRES_PASSWORD: tutorbot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tutorbot -d tutorbot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/tutorbot
+      DATABASE_USERNAME: tutorbot
+      DATABASE_PASSWORD: tutorbot
+      TELEGRAM_MODE: ${TELEGRAM_MODE:-polling}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

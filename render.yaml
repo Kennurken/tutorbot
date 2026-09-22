@@ -1,0 +1,40 @@
+# Render Blueprint: "New > Blueprint" in the Render dashboard, point it at this repo.
+# Free web service built from the Dockerfile. Secrets are entered in the dashboard (sync: false).
+services:
+  - type: web
+    name: tutorbot
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: TELEGRAM_MODE
+        value: webhook
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_WEBHOOK_URL
+        sync: false          # https://<service>.onrender.com
+      - key: TELEGRAM_WEBHOOK_SECRET
+        generateValue: true
+      - key: TELEGRAM_ALLOWED_USER_IDS
+        sync: false
+      - key: DATABASE_URL
+        sync: false          # Supabase session pooler JDBC URL, see docs/DEPLOYMENT.md
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: AI_PROVIDER
+        value: gateway
+      - key: AI_BASE_URL
+        value: https://ai-gateway.vercel.sh/v1
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        value: spacexai/grok-4.1-fast-non-reasoning
+      - key: AI_FALLBACK_MODEL
+        value: poolside/laguna-s-2.1-free
+      - key: TICK_SECRET
+        generateValue: true
+      - key: APP_DEFAULT_TIMEZONE
+        value: Asia/Almaty
