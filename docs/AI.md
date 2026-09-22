@@ -34,11 +34,16 @@ with a version constant that is written to every `ai_interactions` row.
 
 | Version | Job | Max tokens | Temp |
 |---|---|---|---|
-| `task_intent.v2` | free text → task JSON (v2: + deadline) | 900 | 0.2 |
-| `verification_step.v1` | one exam turn: evaluate last answer, decide, next question or verdict | 700 | 0.3 |
-| `weekly_review.v1` | stats JSON → summary, observations (hypotheses), recommendations with reasons | 900 | 0.4 |
-| `skip_analysis.v1` | free-text reason → category, insight, suggestion | 900 | 0.2 |
-| `goal_plan.v1` | goal → 6–12 ordered, examinable steps (title, subject, topic, type, minutes) | 1500 | 0.4 |
+| `task_intent.v2` | free text → task JSON (v2: + deadline) | 2500 | 0.2 |
+| `verification_step.v1` | one exam turn: evaluate last answer, decide, next question or verdict | 3000 | 0.3 |
+| `weekly_review.v1` | stats JSON → summary, observations (hypotheses), recommendations with reasons | 3500 | 0.4 |
+| `skip_analysis.v1` | free-text reason → category, insight, suggestion | 2500 | 0.2 |
+| `goal_plan.v1` | goal → 6–12 ordered, examinable steps (title, subject, topic, type, minutes) | 5000 | 0.4 |
+
+Token budgets are generous on purpose: with reasoning models (Groq `gpt-oss`) the model's
+thinking counts against `max_tokens`, and a budget that is too small ends in
+`400 json_validate_failed: max completion tokens reached`. `AI_REASONING_EFFORT=low` keeps the
+thinking short; the audit row records the real usage.
 
 **Versioning rule:** change the text → bump the suffix. A drop in pass rate can then be correlated
 with `prompt_version` in `ai_interactions`. Old versions stay in git history; the constant only

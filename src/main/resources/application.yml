@@ -74,7 +74,8 @@ ai:
   api-key: ${AI_API_KEY:}
   model: ${AI_MODEL:spacexai/grok-4.1-fast-non-reasoning}
   fallback-model: ${AI_FALLBACK_MODEL:}
-  timeout: 40s
+  reasoning-effort: ${AI_REASONING_EFFORT:}   # low for gpt-oss on Groq; empty for non-reasoning models
+  timeout: 60s
   max-retries: 2
   circuit-breaker:
     failure-threshold: 4

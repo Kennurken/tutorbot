@@ -20,7 +20,7 @@ class ResilientAiProviderTest {
     private final List<String> modelsUsed = new ArrayList<>();
 
     private AiProperties props(int maxRetries, String fallback, int threshold) {
-        return new AiProperties("gateway", "http://x", "k", "primary", fallback, Duration.ofSeconds(5), maxRetries,
+        return new AiProperties("gateway", "http://x", "k", "primary", fallback, "", Duration.ofSeconds(5), maxRetries,
                 new AiProperties.CircuitBreaker(threshold, Duration.ofMinutes(2)),
                 new AiProperties.RateLimit(10), new AiProperties.Pricing(0.2, 0.5));
     }

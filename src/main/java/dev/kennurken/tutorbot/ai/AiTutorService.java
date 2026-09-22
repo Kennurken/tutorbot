@@ -71,13 +71,13 @@ public class AiTutorService {
             sb.append("\nLAST_ANSWER: ").append(ctx.lastAnswer()).append(" END_LAST_ANSWER\n");
         }
         return call(new AiCall<>("verification_step", Prompts.VERIFICATION_VERSION, Prompts.VERIFICATION_SYSTEM,
-                sb.toString(), VerificationStep.class, user.getId(), 700, 0.3));
+                sb.toString(), VerificationStep.class, user.getId(), 3000, 0.3));
     }
 
     public Optional<WeeklyNarrative> weeklyNarrative(User user, String statsJson) {
         String userPrompt = "user_language: " + user.getLanguage() + "\nstats: " + statsJson + "\n";
         return call(new AiCall<>("weekly_review", Prompts.WEEKLY_REVIEW_VERSION, Prompts.WEEKLY_REVIEW_SYSTEM,
-                userPrompt, WeeklyNarrative.class, user.getId(), 900, 0.4));
+                userPrompt, WeeklyNarrative.class, user.getId(), 3500, 0.4));
     }
 
     public Optional<SkipAnalysis> analyzeSkip(User user, String taskTitle, String reason) {
@@ -90,7 +90,7 @@ public class AiTutorService {
         String userPrompt = "user_language: " + user.getLanguage() + "\ngoal: " + goalTitle
                 + "\nsubjects_already_studied: " + knownSubjects + "\n";
         return call(new AiCall<>("goal_plan", Prompts.GOAL_PLAN_VERSION, Prompts.GOAL_PLAN_SYSTEM, userPrompt,
-                GoalPlan.class, user.getId(), 1500, 0.4));
+                GoalPlan.class, user.getId(), 5000, 0.4));
     }
 
     private <T> Optional<T> call(AiCall<T> call) {

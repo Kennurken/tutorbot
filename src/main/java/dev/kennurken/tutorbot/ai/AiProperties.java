@@ -10,6 +10,8 @@ public record AiProperties(
         String apiKey,
         String model,
         String fallbackModel,
+        /** low | medium | high for reasoning models (Groq gpt-oss); empty = omit the parameter. */
+        String reasoningEffort,
         Duration timeout,
         int maxRetries,
         CircuitBreaker circuitBreaker,
@@ -24,6 +26,10 @@ public record AiProperties(
 
     /** USD per one million tokens. Only used for cost estimates, never for billing. */
     public record Pricing(double inputPerMillion, double outputPerMillion) {
+    }
+
+    public boolean hasReasoningEffort() {
+        return reasoningEffort != null && !reasoningEffort.isBlank();
     }
 
     public boolean hasFallbackModel() {

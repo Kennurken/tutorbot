@@ -13,6 +13,6 @@ public record AiCall<T>(
 
     public static <T> AiCall<T> of(String purpose, String promptVersion, String systemPrompt, String userPrompt,
                                    Class<T> responseType, Long userId) {
-        return new AiCall<>(purpose, promptVersion, systemPrompt, userPrompt, responseType, userId, 900, 0.2);
+        return new AiCall<>(purpose, promptVersion, systemPrompt, userPrompt, responseType, userId, 2500, 0.2);
     }
 }

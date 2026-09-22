@@ -12,7 +12,7 @@ class UserAiRateLimiterTest {
     @Test
     void limitsPerUserPerSlidingMinute() {
         MutableClock clock = new MutableClock(Instant.parse("2026-09-21T10:00:00Z"));
-        AiProperties props = new AiProperties("fake", "", "", "m", "", Duration.ofSeconds(1), 0,
+        AiProperties props = new AiProperties("fake", "", "", "m", "", "", Duration.ofSeconds(1), 0,
                 new AiProperties.CircuitBreaker(1, Duration.ofSeconds(1)), new AiProperties.RateLimit(2),
                 new AiProperties.Pricing(0, 0));
         UserAiRateLimiter limiter = new UserAiRateLimiter(props, clock);

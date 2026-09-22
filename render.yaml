@@ -34,6 +34,8 @@ services:
         value: openai/gpt-oss-120b
       - key: AI_FALLBACK_MODEL
         value: openai/gpt-oss-20b
+      - key: AI_REASONING_EFFORT
+        value: low
       - key: AI_PRICE_INPUT_PER_MILLION
         value: "0.15"
       - key: AI_PRICE_OUTPUT_PER_MILLION

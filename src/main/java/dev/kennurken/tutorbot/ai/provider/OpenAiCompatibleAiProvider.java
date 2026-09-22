@@ -63,6 +63,10 @@ public class OpenAiCompatibleAiProvider implements AiProvider {
         if (request.jsonMode()) {
             body.put("response_format", Map.of("type", "json_object"));
         }
+        // Reasoning models spend completion tokens on thinking before the JSON; keep it short.
+        if (properties.hasReasoningEffort()) {
+            body.put("reasoning_effort", properties.reasoningEffort());
+        }
 
         long started = System.nanoTime();
         try {
