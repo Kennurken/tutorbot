@@ -59,9 +59,6 @@ logging:
 app:
   default-timezone: ${APP_DEFAULT_TIMEZONE:Asia/Almaty}
   default-language: ${APP_DEFAULT_LANGUAGE:ru}
-  # Public URL of this deployment; Render injects RENDER_EXTERNAL_URL. Empty = no self-ping.
-  public-url: ${APP_PUBLIC_URL:${RENDER_EXTERNAL_URL:}}
-  keep-alive-interval: 5m
 
 telegram:
   token: ${TELEGRAM_BOT_TOKEN:}

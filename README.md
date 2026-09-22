@@ -77,7 +77,7 @@ influence state through allow-listed service methods. See [docs/ARCHITECTURE.md]
 
 Java 17 · Spring Boot 4.1 (Web MVC, Data JPA, Validation, Actuator, RestClient) · Hibernate 7 ·
 PostgreSQL 16 · Flyway · Jackson 3 · JUnit 5 / Mockito / AssertJ · Docker · Render (host) ·
-Supabase (Postgres) · Vercel AI Gateway (model routing, OpenAI-compatible API).
+Supabase (Postgres + pg_cron keep-alive) · Groq / any OpenAI-compatible model API.
 
 ## Quick start (local)
 

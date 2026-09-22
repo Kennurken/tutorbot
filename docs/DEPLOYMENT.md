@@ -79,26 +79,32 @@ data training. `AI_BASE_URL=https://api.mistral.ai/v1`, `AI_MODEL=mistral-medium
 Runtime settings already in the Dockerfile: serial GC, 70 % of RAM for the heap, C1-only JIT
 (`-XX:TieredStopAtLevel=1`) for fast startup on a small CPU.
 
-## 4. Keep-alive
+## 4. Keep-alive — Supabase pg_cron (no extra account)
 
-Render free services sleep after 15 minutes without HTTP traffic, and a sleeping bot sends no
-reminders. Two zero-account mechanisms keep it awake (both are on by default):
+Render free services sleep after 15 minutes without inbound HTTP traffic; a sleeping bot boots
+in ~90 s, so Telegram's webhook times out and messages arrive minutes late. A request from the
+service to itself does **not** count as traffic (tried; the instance still slept), so the ping
+has to come from outside. The database you already have can do it:
 
-1. **Self-ping**: `KeepAliveService` requests `RENDER_EXTERNAL_URL/actuator/health` every 5 minutes
-   through Render's proxy, which counts as inbound traffic.
-2. **GitHub Actions** (`.github/workflows/keepalive.yml`): a scheduled workflow curls the health
-   endpoint every 10 minutes as a backup for the moments the instance did fall asleep
-   (GitHub may delay scheduled runs, hence the two layers).
+Supabase → SQL Editor:
 
-Optional third layer: any external pinger (cron-job.org, UptimeRobot) on
-`GET /actuator/health` every minute, or `POST /internal/tick` with header
-`X-Tick-Secret: <TICK_SECRET>` to also force a scheduler tick.
+```sql
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+select cron.schedule(
+  'tutorbot-keepalive', '* * * * *',
+  $$ select net.http_get(url := 'https://<service>.onrender.com/actuator/health',
+                         timeout_milliseconds := 60000) $$);
+```
 
-Render's free tier allows 750 instance-hours per month; one service kept awake 24/7 uses ~744.
-If you ever run two services, let one sleep.
+Then Integrations → Cron → **Enable cleanup** (daily purge of `cron.job_run_details`).
+`GET /actuator/health` every minute keeps Render awake and keeps the Supabase project active
+(free projects pause after a week without traffic). Render's free 750 instance-hours/month cover
+one always-on service.
 
-The tick is idempotent, so the in-process scheduler (every 30 s) and the external ping can
-overlap safely; a lock skips the second run.
+Backup: `.github/workflows/keepalive.yml` curls the same URL every 10 minutes (GitHub may delay
+or skip scheduled runs, hence it is only a backup). Any other pinger (UptimeRobot, cron-job.org)
+works the same way; `POST /internal/tick` with `X-Tick-Secret` additionally forces a scheduler tick.
 
 ## 5. Verify
 
