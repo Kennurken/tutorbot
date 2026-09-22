@@ -29,8 +29,8 @@ public class WebhookController {
     @PostMapping("/telegram/webhook")
     public ResponseEntity<Void> receive(@RequestBody Update update,
                                         @RequestHeader(value = "X-Telegram-Bot-Api-Secret-Token", required = false) String token) {
-        String expected = properties.webhookSecret();
-        if (expected == null || expected.isBlank() || token == null
+        String expected = properties.effectiveWebhookSecret();
+        if (expected == null || token == null
                 || !MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8), token.getBytes(StandardCharsets.UTF_8))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

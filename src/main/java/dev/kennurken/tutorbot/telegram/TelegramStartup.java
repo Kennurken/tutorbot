@@ -38,7 +38,7 @@ public class TelegramStartup {
             switch (properties.mode()) {
                 case WEBHOOK -> {
                     String url = properties.webhookUrl().replaceAll("/+$", "") + "/telegram/webhook";
-                    client.setWebhook(url, properties.webhookSecret());
+                    client.setWebhook(url, properties.effectiveWebhookSecret());
                     log.info("Webhook registered at {}", url);
                 }
                 case POLLING -> client.deleteWebhook();

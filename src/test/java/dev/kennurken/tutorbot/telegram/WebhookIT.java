@@ -22,6 +22,8 @@ class WebhookIT extends AbstractIT {
 
     @Autowired
     MockMvc mvc;
+    @Autowired
+    TelegramProperties properties;
 
     @Test
     void rejectsWrongSecret() throws Exception {
@@ -33,9 +35,16 @@ class WebhookIT extends AbstractIT {
     }
 
     @Test
-    void acceptsCorrectSecretImmediately() throws Exception {
+    void rawSecretIsNotAcceptedOnlyItsHash() throws Exception {
         mvc.perform(post("/telegram/webhook").contentType(MediaType.APPLICATION_JSON).content(UPDATE)
                         .header("X-Telegram-Bot-Api-Secret-Token", "s3cret"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void acceptsCorrectSecretImmediately() throws Exception {
+        mvc.perform(post("/telegram/webhook").contentType(MediaType.APPLICATION_JSON).content(UPDATE)
+                        .header("X-Telegram-Bot-Api-Secret-Token", properties.effectiveWebhookSecret()))
                 .andExpect(status().isOk());
     }
 

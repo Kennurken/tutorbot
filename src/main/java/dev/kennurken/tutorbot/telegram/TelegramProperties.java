@@ -31,4 +31,31 @@ public record TelegramProperties(
     public boolean hasToken() {
         return token != null && !token.isBlank();
     }
+
+    public boolean hasWebhookSecret() {
+        return webhookSecret != null && !webhookSecret.isBlank();
+    }
+
+    /**
+     * Telegram accepts only [A-Za-z0-9_-] (1-256 chars) as a secret token, but a generated
+     * secret (e.g. from Render) may contain anything. The value actually registered with
+     * Telegram and compared on inbound requests is therefore the SHA-256 hex of the configured
+     * secret: always valid, and the raw secret never leaves the process.
+     */
+    public String effectiveWebhookSecret() {
+        if (!hasWebhookSecret()) {
+            return null;
+        }
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(webhookSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(digest.length * 2);
+            for (byte b : digest) {
+                hex.append(String.format("%02x", b));
+            }
+            return hex.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 unavailable", e);
+        }
+    }
 }
