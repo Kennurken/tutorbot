@@ -12,8 +12,6 @@ services:
         value: webhook
       - key: TELEGRAM_BOT_TOKEN
         sync: false
-      - key: TELEGRAM_WEBHOOK_URL
-        sync: false          # https://<service>.onrender.com
       - key: TELEGRAM_WEBHOOK_SECRET
         generateValue: true
       - key: TELEGRAM_ALLOWED_USER_IDS
