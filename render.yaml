@@ -24,14 +24,20 @@ services:
         sync: false
       - key: AI_PROVIDER
         value: gateway
+      # Groq free tier (no card): OpenAI-compatible, open-weight gpt-oss models.
+      # Switch back to Vercel AI Gateway (Grok) by changing these three values.
       - key: AI_BASE_URL
-        value: https://ai-gateway.vercel.sh/v1
+        value: https://api.groq.com/openai/v1
       - key: AI_API_KEY
         sync: false
       - key: AI_MODEL
-        value: spacexai/grok-4.1-fast-non-reasoning
+        value: openai/gpt-oss-120b
       - key: AI_FALLBACK_MODEL
-        value: poolside/laguna-s-2.1-free
+        value: openai/gpt-oss-20b
+      - key: AI_PRICE_INPUT_PER_MILLION
+        value: "0.15"
+      - key: AI_PRICE_OUTPUT_PER_MILLION
+        value: "0.60"
       - key: TICK_SECRET
         generateValue: true
       - key: APP_DEFAULT_TIMEZONE

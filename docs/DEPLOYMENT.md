@@ -28,21 +28,42 @@ DATABASE_PASSWORD=<db password>
 Flyway creates the schema on first boot. Supabase pauses free projects after 7 days without
 traffic; the bot's tick keeps it active.
 
-## 2. AI — Vercel AI Gateway
+## 2. AI — any OpenAI-compatible API
 
-1. Vercel dashboard → **AI Gateway** → **API keys** → create a key (or `vercel ai-gateway api-keys create`).
-   Optionally set a monthly budget on the key.
-2. Values:
+The app speaks the OpenAI chat-completions dialect, so the provider is three env vars.
+
+### Option A (default): Groq — free, no card
+
+1. Sign up at https://console.groq.com (Google/GitHub), **API Keys → Create API Key**.
+2. Values (already in `render.yaml` except the key):
 
 ```
-AI_PROVIDER=gateway
-AI_BASE_URL=https://ai-gateway.vercel.sh/v1
+AI_BASE_URL=https://api.groq.com/openai/v1
 AI_API_KEY=<the key>
+AI_MODEL=openai/gpt-oss-120b          # open-weight, strong reasoning
+AI_FALLBACK_MODEL=openai/gpt-oss-20b
+```
+
+Free tier at the time of writing: 30 requests/min, 1,000 requests/day, ~200K tokens/day per
+model; a verification uses 3–5 calls of ~2K tokens. Limits: https://console.groq.com/docs/rate-limits
+
+### Option B: Vercel AI Gateway (Grok and 300+ models)
+
+Requires a card on file to unlock the free monthly credits (no charge without opt-in).
+Vercel dashboard → **AI Gateway → API keys** → create; then:
+
+```
+AI_BASE_URL=https://ai-gateway.vercel.sh/v1
 AI_MODEL=spacexai/grok-4.1-fast-non-reasoning
 AI_FALLBACK_MODEL=poolside/laguna-s-2.1-free
 ```
 
-`GET https://ai-gateway.vercel.sh/v1/models` lists current model ids and prices (no auth needed).
+`GET https://ai-gateway.vercel.sh/v1/models` lists model ids and prices (no auth needed).
+
+### Option C: Mistral La Plateforme (free "Experiment" plan)
+
+Very generous (~1B tokens/month per model) but requires phone verification and opting into
+data training. `AI_BASE_URL=https://api.mistral.ai/v1`, `AI_MODEL=mistral-medium-latest`.
 
 ## 3. Host — Render
 
