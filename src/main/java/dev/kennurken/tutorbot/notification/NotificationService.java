@@ -102,9 +102,16 @@ public class NotificationService {
             n.cancel();
             return null;
         }
-        boolean tooLate = n.getScheduledAt().plus(MAX_LATENESS).isBefore(now) && n.getKind().isAccountabilityNudge();
+        Instant effectiveDue = n.getNextAttemptAt() != null && n.getNextAttemptAt().isAfter(n.getScheduledAt())
+                ? n.getNextAttemptAt() : n.getScheduledAt();
+        boolean tooLate = effectiveDue.plus(MAX_LATENESS).isBefore(now) && n.getKind().isAccountabilityNudge();
         if (tooLate || (user.isPaused(now) && n.getKind().isAccountabilityNudge())) {
             n.cancel();
+            notifications.save(n);
+            return null;
+        }
+        if (n.getKind().isDeferrableInQuietHours() && user.getSettings().isQuietAt(now, user.zone())) {
+            n.defer(user.getSettings().quietWindowEnd(now, user.zone()));
             notifications.save(n);
             return null;
         }

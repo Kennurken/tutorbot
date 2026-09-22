@@ -217,6 +217,20 @@ public class TaskService {
         return task;
     }
 
+    @Transactional
+    public Task cancelBySystem(Task task, String reason) {
+        transition(task, TaskStatus.CANCELLED, Actor.SYSTEM, TaskEventType.TASK_CANCELLED, Map.of("reason", reason));
+        return task;
+    }
+
+    /** Same as {@link #create} but tagged with a non-user kind (review, quiz). */
+    @Transactional
+    public Task create(User user, CreateTaskCommand cmd, TaskKind kind) {
+        Task task = create(user, cmd);
+        task.setKind(kind);
+        return tasks.save(task);
+    }
+
     /** System decision: the grace period passed. {@code systemFault} = the bot itself was down. */
     @Transactional
     public Task markMissed(Task task, boolean systemFault, String reason) {
@@ -349,6 +363,12 @@ public class TaskService {
     @Transactional(readOnly = true)
     public long countMissedSince(User user, Instant since) {
         return tasks.countByUserIdAndStatusAndMissedAtAfterAndSystemFaultFalse(user.getId(), TaskStatus.MISSED, since);
+    }
+
+    /** (total, completed) tasks linked to a goal. */
+    @Transactional(readOnly = true)
+    public long[] goalProgress(Long goalId) {
+        return new long[] {tasks.countByGoalId(goalId), tasks.countByGoalIdAndStatus(goalId, TaskStatus.COMPLETED)};
     }
 
     @Transactional(readOnly = true)

@@ -39,4 +39,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     boolean existsByRecurrenceRuleIdAndOccurrenceDate(Long recurrenceRuleId, LocalDate occurrenceDate);
 
     long countByUserIdAndStatusInAndScheduledAtBetween(Long userId, Collection<TaskStatus> statuses, Instant from, Instant to);
+
+    long countByGoalId(Long goalId);
+
+    long countByGoalIdAndStatus(Long goalId, TaskStatus status);
 }

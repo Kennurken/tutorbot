@@ -2,7 +2,10 @@ package dev.kennurken.tutorbot.user;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import java.time.Instant;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /**
  * Per-user planning limits. Embedded in {@code users} instead of a 1:1 table: there is
@@ -22,6 +25,21 @@ public class UserSettings {
 
     @Column(name = "verification_max_questions", nullable = false)
     private int verificationMaxQuestions = 4;
+
+    /** Nudges are held back between these local times (null = no quiet hours). */
+    @Column(name = "quiet_hours_start")
+    private LocalTime quietHoursStart = LocalTime.of(23, 0);
+
+    @Column(name = "quiet_hours_end")
+    private LocalTime quietHoursEnd = LocalTime.of(8, 0);
+
+    /** Local time of the "how did today go" message (null = off). */
+    @Column(name = "evening_summary_time")
+    private LocalTime eveningSummaryTime = LocalTime.of(21, 30);
+
+    /** Local time of the daily retrieval-practice quiz (null = off). */
+    @Column(name = "quiz_time")
+    private LocalTime quizTime = LocalTime.of(13, 0);
 
     public int getDailyTaskLimit() {
         return dailyTaskLimit;
@@ -53,5 +71,60 @@ public class UserSettings {
 
     public void setVerificationMaxQuestions(int verificationMaxQuestions) {
         this.verificationMaxQuestions = verificationMaxQuestions;
+    }
+
+    public LocalTime getQuietHoursStart() {
+        return quietHoursStart;
+    }
+
+    public LocalTime getQuietHoursEnd() {
+        return quietHoursEnd;
+    }
+
+    public void setQuietHours(LocalTime start, LocalTime end) {
+        this.quietHoursStart = start;
+        this.quietHoursEnd = end;
+    }
+
+    public boolean hasQuietHours() {
+        return quietHoursStart != null && quietHoursEnd != null && !quietHoursStart.equals(quietHoursEnd);
+    }
+
+    /** True if the local wall-clock time is inside the quiet window (which may wrap midnight). */
+    public boolean isQuietAt(Instant instant, ZoneId zone) {
+        if (!hasQuietHours()) {
+            return false;
+        }
+        LocalTime t = instant.atZone(zone).toLocalTime();
+        if (quietHoursStart.isBefore(quietHoursEnd)) {
+            return !t.isBefore(quietHoursStart) && t.isBefore(quietHoursEnd);
+        }
+        return !t.isBefore(quietHoursStart) || t.isBefore(quietHoursEnd);
+    }
+
+    /** The next instant at which the quiet window ends (only meaningful when {@link #isQuietAt} is true). */
+    public Instant quietWindowEnd(Instant instant, ZoneId zone) {
+        ZonedDateTime local = instant.atZone(zone);
+        ZonedDateTime end = local.with(quietHoursEnd);
+        if (!end.isAfter(local)) {
+            end = end.plusDays(1);
+        }
+        return end.toInstant();
+    }
+
+    public LocalTime getEveningSummaryTime() {
+        return eveningSummaryTime;
+    }
+
+    public void setEveningSummaryTime(LocalTime eveningSummaryTime) {
+        this.eveningSummaryTime = eveningSummaryTime;
+    }
+
+    public LocalTime getQuizTime() {
+        return quizTime;
+    }
+
+    public void setQuizTime(LocalTime quizTime) {
+        this.quizTime = quizTime;
     }
 }

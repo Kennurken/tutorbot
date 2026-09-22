@@ -245,8 +245,10 @@ with statistics and narrative, event log, AI audit and cost, streak.
 
 ## K. Roadmap
 
-- **V2:** voice answers (Telegram voice → STT → same verification path), goal → milestone →
-  task decomposition prompt, deadline-aware planner, English-only mode, calendar import.
+- **Done after v0.1:** quiet hours, evening summary, `/history`, review buttons in `/knowledge`,
+  deadlines in the parser, daily retrieval quiz (`quiz` module), goal decomposition (`goal_plan.v1`).
+- **V2:** voice answers (Telegram voice → STT → same verification path), English-only mode,
+  calendar import, programming tasks verified against a GitHub diff.
 - **V3:** REST API + web dashboard (tasks, knowledge, analytics), multi-instance scheduling
   (ShedLock), Redis only if rate limiting/conversation state must be shared across instances.
 - **SaaS:** plans and limits are already representable per user (`UserSettings`); add tenancy

@@ -94,6 +94,11 @@ public class Notification {
         this.lastError = error;
     }
 
+    /** Quiet hours: postpone without counting an attempt. */
+    public void defer(Instant until) {
+        this.nextAttemptAt = until;
+    }
+
     public void retryLater(Instant at, String error) {
         this.nextAttemptAt = at;
         this.lastError = error;

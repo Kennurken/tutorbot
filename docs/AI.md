@@ -34,10 +34,11 @@ with a version constant that is written to every `ai_interactions` row.
 
 | Version | Job | Max tokens | Temp |
 |---|---|---|---|
-| `task_intent.v1` | free text → task JSON | 900 | 0.2 |
+| `task_intent.v2` | free text → task JSON (v2: + deadline) | 900 | 0.2 |
 | `verification_step.v1` | one exam turn: evaluate last answer, decide, next question or verdict | 700 | 0.3 |
 | `weekly_review.v1` | stats JSON → summary, observations (hypotheses), recommendations with reasons | 900 | 0.4 |
 | `skip_analysis.v1` | free-text reason → category, insight, suggestion | 900 | 0.2 |
+| `goal_plan.v1` | goal → 6–12 ordered, examinable steps (title, subject, topic, type, minutes) | 1500 | 0.4 |
 
 **Versioning rule:** change the text → bump the suffix. A drop in pass rate can then be correlated
 with `prompt_version` in `ai_interactions`. Old versions stay in git history; the constant only

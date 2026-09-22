@@ -59,6 +59,10 @@ public class Task {
     @Column(nullable = false)
     private TaskStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TaskKind kind = TaskKind.REGULAR;
+
     @Column(nullable = false)
     private boolean verificationRequired;
 
@@ -230,6 +234,14 @@ public class Task {
 
     public TaskStatus getStatus() {
         return status;
+    }
+
+    public TaskKind getKind() {
+        return kind;
+    }
+
+    public void setKind(TaskKind kind) {
+        this.kind = kind;
     }
 
     void setStatus(TaskStatus status) {

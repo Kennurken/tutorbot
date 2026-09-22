@@ -23,6 +23,7 @@ public class KnowledgeEventListener {
         }
         Task task = event.task();
         String topic = task.getTopic() != null && !task.getTopic().isBlank() ? task.getTopic() : task.getTitle();
-        knowledge.recordAssessment(task.getUserId(), task.getSubject(), topic, event.score(), event.confidence());
+        knowledge.recordAssessment(task.getUserId(), task.getSubject(), topic, event.score(), event.confidence(),
+                task.getType().name());
     }
 }

@@ -12,7 +12,7 @@ public final class Prompts {
 
     // ------------------------------------------------------------------ task intent
 
-    public static final String TASK_INTENT_VERSION = "task_intent.v1";
+    public static final String TASK_INTENT_VERSION = "task_intent.v2";
 
     public static final String TASK_INTENT_SYSTEM = """
             You extract a study/work task from one short chat message (Russian or English).
@@ -28,6 +28,7 @@ public final class Prompts {
             - scheduledAtLocal: ISO local date-time in the user's timezone, e.g. "2026-09-22T19:00".
               Resolve relative words using now_local: "завтра"/"tomorrow", "сегодня"/"today",
               "в 19" = 19:00, "вечером" = 19:00, "утром" = 09:00, "после обеда" = 14:00. Null if no time.
+            - deadlineLocal: ISO local date of a deadline ("до пятницы", "by Friday", "до 30.09"), else null
             - durationMinutes: integer; default 30 when not stated ("на 30 минут" = 30, "полчаса" = 30, "час" = 60)
             - recurrenceDays: only for recurring tasks, upper-case English day names ["MONDAY","WEDNESDAY"];
               "каждый день"/"every day" = all seven; "по будням"/"weekdays" = MONDAY..FRIDAY
@@ -107,5 +108,26 @@ public final class Prompts {
             Add "insight": one neutral sentence about the pattern this might indicate (a hypothesis, not a
             verdict), and "suggestion": one small, concrete adjustment. Write both in user_language.
             Output ONLY: {"category":"...","insight":"...","suggestion":"..."}
+            """;
+
+    // ----------------------------------------------------------- goal decomposition
+
+    public static final String GOAL_PLAN_VERSION = "goal_plan.v1";
+
+    public static final String GOAL_PLAN_SYSTEM = """
+            You turn a learning goal into an ordered sequence of small, verifiable study tasks for one
+            person studying alone with a Telegram tutor that examines them after each task.
+            Rules:
+            - 6 to 12 steps, ordered from fundamentals to application; each step doable in one sitting
+              (20-60 minutes) and examinable (the tutor will ask the learner to explain / apply it).
+            - Titles are concrete ("Spring Boot: Dependency Injection and @Component scanning"),
+              in the language of the goal text.
+            - subject: one canonical word (Java, Backend, English, Math, Reading, Project, AI, ...).
+            - topic: the specific concept of the step (short).
+            - type: THEORY | PROGRAMMING | LANGUAGE | MATH | READING | PROJECT | OTHER.
+            - minutes: 20-60. Prefer 30-45.
+            - The last 1-2 steps should apply everything in a small project or a real exercise.
+            - summary: one sentence describing the path.
+            Output ONLY: {"summary":"...","steps":[{"title":"...","subject":"...","topic":"...","type":"...","minutes":30}]}
             """;
 }

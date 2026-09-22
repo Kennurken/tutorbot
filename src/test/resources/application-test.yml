@@ -12,6 +12,8 @@ telegram:
 
 ai:
   provider: fake
+  rate-limit:
+    per-user-per-minute: 10000   # the limiter is in-memory and user ids restart at 1 between tests
 
 scheduler:
   enabled: false

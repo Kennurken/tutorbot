@@ -30,6 +30,11 @@ public class FakeAiProvider implements AiProvider {
             case "weekly_review" -> """
                     {"summary":"Fake weekly summary.","observations":["Fake observation."],
                      "recommendations":[{"change":"Keep sessions under 45 minutes","reason":"Fake reason"}]}""";
+            case "goal_plan" -> """
+                    {"summary":"Fake path.","steps":[
+                      {"title":"Step one: basics","subject":"Java","topic":"basics","type":"THEORY","minutes":30},
+                      {"title":"Step two: practice","subject":"Java","topic":"practice","type":"PROGRAMMING","minutes":45},
+                      {"title":"Step three: mini project","subject":"Java","topic":"project","type":"PROJECT","minutes":60}]}""";
             case "skip_analysis" -> "{\"category\":\"OTHER\",\"insight\":\"Fake insight\",\"suggestion\":\"Fake suggestion\"}";
             default -> "{}";
         };

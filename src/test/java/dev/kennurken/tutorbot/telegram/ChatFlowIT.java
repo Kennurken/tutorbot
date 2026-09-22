@@ -90,6 +90,32 @@ class ChatFlowIT extends AbstractIT {
         assertThat(skipped.getSkipReason()).contains("универе");
     }
 
+    @Test
+    void goalIsDecomposedIntoDailyTasksAfterConfirmation() {
+        say("/goals add Стать Java backend разработчиком");
+        assertThat(lastReply()).contains("Цель #1");
+        say("/goals plan 1 20:00");
+        assertThat(lastReply()).contains("3 задач").contains("20:00");
+
+        tap(Callbacks.of(Callbacks.GOAL_PLAN, "yes"));
+        assertThat(lastReply()).contains("Создано задач: 3");
+        List<Task> created = tasks.findAll();
+        assertThat(created).hasSize(3).allMatch(t -> t.getGoalId() == 1L);
+        assertThat(created.get(0).getScheduledAt().atZone(java.time.ZoneId.of("Asia/Almaty")).toLocalTime())
+                .isEqualTo(java.time.LocalTime.of(20, 0));
+        say("/goals");
+        assertThat(lastReply()).contains("0/3");
+    }
+
+    @Test
+    void historyShowsTheEventLog() {
+        say("сегодня в 23:00 java 30 мин");
+        tap(Callbacks.of(Callbacks.TASK_CONFIRM, "yes"));
+        Task task = tasks.findAll().get(0);
+        say("/history " + task.getId());
+        assertThat(lastReply()).contains("История").contains("создана").contains("запланирована");
+    }
+
     private void say(String text) {
         processor.process(message(text));
     }

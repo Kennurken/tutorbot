@@ -99,6 +99,11 @@ Unique `(user_id, week_start)`; `stats` JSONB (the exact input the model saw), `
 `user_id` PK, `state`, `context` JSONB (task id, skip category, task draft). Persisted so a restart
 mid-exam loses nothing.
 
+### V2 additions
+`users`: `quiet_hours_start/end`, `evening_summary_time`, `last_evening_summary_date`, `quiz_time`,
+`last_quiz_date`. `tasks.kind` (REGULAR / REVIEW / QUIZ). `knowledge_topics.task_type`,
+`knowledge_topics.last_quiz_at`.
+
 ## Migrations policy
 
 - Never edit an applied migration; add `V2__...sql`.

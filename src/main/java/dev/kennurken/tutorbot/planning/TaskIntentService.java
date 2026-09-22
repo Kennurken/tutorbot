@@ -85,8 +85,17 @@ public class TaskIntentService {
                 return Optional.empty();
             }
         }
+        Instant deadlineAt = null;
+        if (d.deadlineLocal() != null && !d.deadlineLocal().isBlank()) {
+            try {
+                deadlineAt = java.time.LocalDate.parse(d.deadlineLocal().trim()).plusDays(1)
+                        .atStartOfDay(user.zone()).toInstant().minusSeconds(60);
+            } catch (DateTimeParseException ignored) {
+                // a bad deadline should not block the task
+            }
+        }
         return Optional.of(new CreateTaskCommand(d.title().trim(), null, d.subject(), d.topic(), type, priority,
-                scheduledAt, minutes, null, verification, null, null));
+                scheduledAt, minutes, deadlineAt, verification, null, null));
     }
 
     private static LocalTime parseTime(String hhmm) {

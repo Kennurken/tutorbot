@@ -5,6 +5,7 @@ import dev.kennurken.tutorbot.messaging.BotMessages;
 import dev.kennurken.tutorbot.messaging.TaskFormatter;
 import dev.kennurken.tutorbot.task.Task;
 import dev.kennurken.tutorbot.task.TaskService;
+import dev.kennurken.tutorbot.task.Streaks;
 import dev.kennurken.tutorbot.task.TaskStatus;
 import dev.kennurken.tutorbot.telegram.handler.CommandContext;
 import dev.kennurken.tutorbot.telegram.handler.CommandHandler;
@@ -15,8 +16,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 /** The metric that matters: promised vs. started vs. verified, today and over 7 days. */
@@ -55,7 +54,7 @@ public class StatusCommand implements CommandHandler {
         LocalDate today = user.today(now);
         List<Task> todayTasks = tasks.findForLocalDate(user, today);
         List<Task> week = tasks.findInWindow(user, now.minus(Duration.ofDays(7)), now);
-        int streak = streak(user, tasks.findInWindow(user, now.minus(Duration.ofDays(60)), now), today);
+        int streak = Streaks.consecutiveDays(user, tasks.findInWindow(user, now.minus(Duration.ofDays(60)), now), today);
         BigDecimal cost = aiInteractions.sumCostSince(user.getId(), today.withDayOfMonth(1).atStartOfDay(user.zone()).toInstant());
 
         StringBuilder sb = new StringBuilder();
@@ -86,18 +85,4 @@ public class StatusCommand implements CommandHandler {
         return (int) list.stream().filter(t -> t.getStatus() == status).count();
     }
 
-    /** Consecutive days (ending today or yesterday) with at least one completed task. */
-    static int streak(User user, List<Task> recent, LocalDate today) {
-        Set<LocalDate> days = recent.stream()
-                .filter(t -> t.getStatus() == TaskStatus.COMPLETED && t.getCompletedAt() != null)
-                .map(t -> user.today(t.getCompletedAt()))
-                .collect(Collectors.toSet());
-        LocalDate cursor = days.contains(today) ? today : today.minusDays(1);
-        int streak = 0;
-        while (days.contains(cursor)) {
-            streak++;
-            cursor = cursor.minusDays(1);
-        }
-        return streak;
-    }
 }

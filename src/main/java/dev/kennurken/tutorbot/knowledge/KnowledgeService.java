@@ -2,8 +2,11 @@ package dev.kennurken.tutorbot.knowledge;
 
 import dev.kennurken.tutorbot.user.User;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,13 +23,39 @@ public class KnowledgeService {
 
     /** Called after every finished verification with a usable score. */
     @Transactional
-    public KnowledgeTopic recordAssessment(Long userId, String subject, String topicName, double score, double confidence) {
+    public KnowledgeTopic recordAssessment(Long userId, String subject, String topicName, double score, double confidence,
+                                           String taskType) {
         String subj = normalize(subject);
         String top = normalize(topicName);
         KnowledgeTopic topic = topics.findByUserIdAndSubjectIgnoreCaseAndTopicIgnoreCase(userId, subj, top)
                 .orElseGet(() -> new KnowledgeTopic(userId, subj, top));
         topic.apply(KnowledgeModel.update(topic.state(), score, confidence), clock.instant());
+        if (taskType != null) {
+            topic.setTaskType(taskType);
+        }
         return topics.save(topic);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<KnowledgeTopic> find(User user, Long topicId) {
+        return topics.findById(topicId).filter(t -> t.getUserId().equals(user.getId()));
+    }
+
+    /** The single topic that most needs retrieval practice today, if any. */
+    @Transactional(readOnly = true)
+    public Optional<KnowledgeTopic> quizCandidate(User user, double retentionThreshold, Duration minGapSinceLastQuiz) {
+        Instant now = clock.instant();
+        return profile(user).stream()
+                .filter(t -> t.getSampleCount() > 0)
+                .filter(t -> t.getLastQuizAt() == null || t.getLastQuizAt().plus(minGapSinceLastQuiz).isBefore(now))
+                .filter(t -> KnowledgeModel.retention(t.state(), t.getLastVerifiedAt(), now) < retentionThreshold)
+                .min(Comparator.comparingDouble(t -> KnowledgeModel.retention(t.state(), t.getLastVerifiedAt(), now)));
+    }
+
+    @Transactional
+    public void markQuizzed(KnowledgeTopic topic) {
+        topic.setLastQuizAt(clock.instant());
+        topics.save(topic);
     }
 
     @Transactional(readOnly = true)

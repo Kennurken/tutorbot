@@ -14,6 +14,8 @@ public final class Callbacks {
     public static final String PAUSE = "pause";
     public static final String MODE = "mode";
     public static final String ABANDON = "abandon";
+    public static final String REVIEW_TOPIC = "revtopic";
+    public static final String GOAL_PLAN = "goalplan";
     public static final String NOOP = "noop";
 
     private Callbacks() {

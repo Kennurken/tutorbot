@@ -94,6 +94,26 @@ class NaturalLanguageTaskParserTest {
     }
 
     @Test
+    void deadlinePhraseSetsDeadlineWithoutStealingTheScheduledDay() {
+        CreateTaskCommand cmd = parse("сделать лабу до пятницы завтра в 15 на 2 часа");
+
+        assertThat(cmd.scheduledAt()).isEqualTo(LocalDateTime.of(2026, 9, 22, 15, 0).atZone(ALMATY).toInstant());
+        assertThat(cmd.deadlineAt()).isEqualTo(LocalDateTime.of(2026, 9, 25, 23, 59).atZone(ALMATY).toInstant());
+        assertThat(cmd.estimatedMinutes()).isEqualTo(120);
+        assertThat(cmd.title()).doesNotContainIgnoringCase("пятниц");
+    }
+
+    @Test
+    void englishDeadlineAndNumericDeadline() {
+        CreateTaskCommand cmd = parse("project report by friday tomorrow at 10 1 hour");
+        assertThat(cmd.deadlineAt()).isEqualTo(LocalDateTime.of(2026, 9, 25, 23, 59).atZone(ALMATY).toInstant());
+        assertThat(cmd.scheduledAt()).isEqualTo(LocalDateTime.of(2026, 9, 22, 10, 0).atZone(ALMATY).toInstant());
+
+        CreateTaskCommand numeric = parse("курсовая до 30.09 сегодня в 20 час");
+        assertThat(numeric.deadlineAt()).isEqualTo(LocalDateTime.of(2026, 9, 30, 23, 59).atZone(ALMATY).toInstant());
+    }
+
+    @Test
     void chitChatIsNotATask() {
         assertThat(NaturalLanguageTaskParser.parse("привет, как дела?", NOW, ALMATY)).isEmpty();
         assertThat(NaturalLanguageTaskParser.parse("what is a hashmap", NOW, ALMATY)).isEmpty();

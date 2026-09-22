@@ -30,8 +30,10 @@ public class TaskFormatter {
 
     public String line(User user, Task task, Instant now) {
         String when = task.getScheduledAt() == null ? "—" : TimeFormats.smart(task.getScheduledAt(), user.zone(), now);
-        return "%s %s <b>#%d</b> %s · %dm".formatted(icon(task.getStatus()), when, task.getId(),
-                Html.esc(task.getTitle()), task.effectiveMinutes());
+        String deadline = task.getDeadlineAt() == null ? ""
+                : " · ⏳" + TimeFormats.dateTime(task.getDeadlineAt(), user.zone()).substring(0, 5);
+        return "%s %s <b>#%d</b> %s · %dm%s".formatted(icon(task.getStatus()), when, task.getId(),
+                Html.esc(task.getTitle()), task.effectiveMinutes(), deadline);
     }
 
     public String list(User user, List<Task> tasks, Instant now) {

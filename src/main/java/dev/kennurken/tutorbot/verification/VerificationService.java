@@ -9,6 +9,7 @@ import dev.kennurken.tutorbot.conversation.ConversationService;
 import dev.kennurken.tutorbot.conversation.ConversationState;
 import dev.kennurken.tutorbot.knowledge.KnowledgeService;
 import dev.kennurken.tutorbot.task.Task;
+import dev.kennurken.tutorbot.task.TaskKind;
 import dev.kennurken.tutorbot.task.TaskService;
 import dev.kennurken.tutorbot.task.TaskStatus;
 import dev.kennurken.tutorbot.user.User;
@@ -78,7 +79,12 @@ public class VerificationService {
     // ------------------------------------------------------------------ start
 
     public StartResult start(User user, Task task) {
-        VerificationSession session = tx.execute(status -> openSession(user, task));
+        return start(user, task, null);
+    }
+
+    /** {@code maxQuestionsOverride} lets a quiz run shorter than the user's exam setting. */
+    public StartResult start(User user, Task task, Integer maxQuestionsOverride) {
+        VerificationSession session = tx.execute(status -> openSession(user, task, maxQuestionsOverride));
         int maxQuestions = session.getMaxQuestions();
 
         Optional<VerificationStep> step = ai.verificationStep(user, context(user, task, session, List.of(), null,
@@ -94,7 +100,7 @@ public class VerificationService {
         return new StartResult(session, question, step.isPresent());
     }
 
-    private VerificationSession openSession(User user, Task task) {
+    private VerificationSession openSession(User user, Task task, Integer maxQuestionsOverride) {
         Optional<VerificationSession> active = sessions.findByUserIdAndStatus(user.getId(), SessionStatus.IN_PROGRESS);
         if (active.isPresent() && !active.get().getTaskId().equals(task.getId())) {
             throw new DomainException("Another verification is in progress (task #" + active.get().getTaskId()
@@ -113,8 +119,9 @@ public class VerificationService {
         fresh = taskService.beginVerification(fresh);
 
         Instant now = clock.instant();
+        int configured = maxQuestionsOverride != null ? maxQuestionsOverride : user.getSettings().getVerificationMaxQuestions();
         int maxQuestions = Math.max(props.verification().minQuestions(),
-                Math.min(user.getSettings().getVerificationMaxQuestions(), props.verification().maxQuestions()));
+                Math.min(configured, props.verification().maxQuestions()));
         VerificationSession session = sessions.save(new VerificationSession(fresh.getId(), user.getId(),
                 fresh.getVerificationAttempts(), initialDifficulty(user, fresh), maxQuestions, now,
                 now.plus(props.verification().sessionTimeout())));
@@ -266,7 +273,12 @@ public class VerificationService {
                     sessions.save(session);
                     Task task = taskService.expireVerification(taskService.getById(session.getTaskId()));
                     conversations.clear(session.getUserId());
-                    publisher.publishEvent(new VerificationExpired(task));
+                    if (task.getKind() == TaskKind.QUIZ) {
+                        // Ignoring a quiz is free: no lingering "pending verification", no nudge.
+                        taskService.cancelBySystem(task, "quiz_ignored");
+                    } else {
+                        publisher.publishEvent(new VerificationExpired(task));
+                    }
                 });
                 count++;
             } catch (RuntimeException e) {

@@ -128,6 +128,12 @@ public class TaskFlows {
                     .append(at.toLocalDate()).append(" ").append(at.toLocalTime()).append("\n");
         }
         sb.append(msg.get(user, "add.field.duration")).append(": ").append(cmd.estimatedMinutes()).append(" min\n");
+        if (cmd.deadlineAt() != null) {
+            ZonedDateTime d = cmd.deadlineAt().atZone(user.zone());
+            sb.append(msg.get(user, "add.field.deadline")).append(": ")
+                    .append(d.getDayOfWeek().getDisplayName(TextStyle.SHORT, locale(user))).append(" ")
+                    .append(d.toLocalDate()).append("\n");
+        }
         sb.append(msg.get(user, "add.field.verification")).append(": ")
                 .append(msg.get(user, cmd.verificationRequired() ? "yes" : "no"));
         return sb.toString();

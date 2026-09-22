@@ -56,6 +56,10 @@ public class User {
 
     private LocalDate lastMorningPlanDate;
 
+    private LocalDate lastEveningSummaryDate;
+
+    private LocalDate lastQuizDate;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -186,6 +190,22 @@ public class User {
 
     public void setLastMorningPlanDate(LocalDate lastMorningPlanDate) {
         this.lastMorningPlanDate = lastMorningPlanDate;
+    }
+
+    public LocalDate getLastEveningSummaryDate() {
+        return lastEveningSummaryDate;
+    }
+
+    public void setLastEveningSummaryDate(LocalDate lastEveningSummaryDate) {
+        this.lastEveningSummaryDate = lastEveningSummaryDate;
+    }
+
+    public LocalDate getLastQuizDate() {
+        return lastQuizDate;
+    }
+
+    public void setLastQuizDate(LocalDate lastQuizDate) {
+        this.lastQuizDate = lastQuizDate;
     }
 
     public Instant getCreatedAt() {

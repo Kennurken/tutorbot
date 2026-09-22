@@ -113,7 +113,7 @@ public class UpdateDispatcher {
                     taskFlows.rescheduleTo(user, state.taskId(), parsed.get().scheduledAt(), reply);
                 }
             }
-            case IDLE -> taskFlows.proposeFromText(user, text, reply);
+            case IDLE, AWAITING_GOAL_PLAN_CONFIRMATION -> taskFlows.proposeFromText(user, text, reply);
         }
     }
 

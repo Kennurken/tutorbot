@@ -46,6 +46,11 @@ public class KnowledgeTopic {
 
     private Instant lastVerifiedAt;
 
+    /** Type of the task that last verified this topic; used to pick the exam style for reviews and quizzes. */
+    private String taskType;
+
+    private Instant lastQuizAt;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -124,5 +129,21 @@ public class KnowledgeTopic {
 
     public Instant getLastVerifiedAt() {
         return lastVerifiedAt;
+    }
+
+    public String getTaskType() {
+        return taskType;
+    }
+
+    public void setTaskType(String taskType) {
+        this.taskType = taskType;
+    }
+
+    public Instant getLastQuizAt() {
+        return lastQuizAt;
+    }
+
+    public void setLastQuizAt(Instant lastQuizAt) {
+        this.lastQuizAt = lastQuizAt;
     }
 }

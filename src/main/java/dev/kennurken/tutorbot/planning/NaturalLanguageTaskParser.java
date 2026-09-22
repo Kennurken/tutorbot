@@ -50,6 +50,12 @@ public final class NaturalLanguageTaskParser {
     private static final Pattern TODAY = p("\\b(сегодня|today)\\b");
     private static final Pattern TOMORROW = p("\\b(завтра|tomorrow|tmrw)\\b");
     private static final Pattern AFTER_TOMORROW = p("\\b(послезавтра|day after tomorrow)\\b");
+    /** "до пятницы", "к среде", "до конца недели", "by friday", "before 30.09", "до 30.09". */
+    private static final Pattern DEADLINE = p("\\b(?:до|к|by|before|due)\\s+(завтра|послезавтра|tomorrow|"
+            + "конца недели|end of (?:the )?week|понедельника|вторника|среды|четверга|пятницы|субботы|воскресенья|"
+            + "понедельнику|вторнику|среде|четвергу|пятнице|субботе|воскресенью|"
+            + "monday|tuesday|wednesday|thursday|friday|saturday|sunday|\\d{1,2}[./]\\d{1,2}(?:[./]\\d{2,4})?)\\b");
+
     private static final Pattern FILLER = p("(?i)\\b(на|в|во|и|at|for|and|the|a|an|с|до|по|каждый|каждую|каждое|every|минут|мин|min|minutes)\\b");
 
     static {
@@ -97,6 +103,8 @@ public final class NaturalLanguageTaskParser {
         StringBuilder residual = new StringBuilder(text);
 
         Integer minutes = extractMinutes(residual);
+        ZonedDateTime localNow = now.atZone(zone);
+        LocalDate deadlineDate = extractDeadline(residual, localNow.toLocalDate());
 
         Set<DayOfWeek> everyDays = EnumSet.noneOf(DayOfWeek.class);
         boolean recurring = false;
@@ -183,6 +191,7 @@ public final class NaturalLanguageTaskParser {
         String topic = topicFrom(title, hint);
         int duration = minutes == null ? DEFAULT_MINUTES : minutes;
         boolean verification = type != TaskType.OTHER;
+        Instant deadlineAt = deadlineDate == null ? null : deadlineDate.plusDays(1).atStartOfDay(zone).toInstant().minusSeconds(60);
 
         if (recurring) {
             return Optional.of(new CreateTaskCommand(title, null, subject, topic, type, Priority.MEDIUM, null, duration,
@@ -193,7 +202,43 @@ public final class NaturalLanguageTaskParser {
             return Optional.empty();
         }
         return Optional.of(new CreateTaskCommand(title, null, subject, topic, type, Priority.MEDIUM, scheduledAt,
-                duration, null, verification, null, null));
+                duration, deadlineAt, verification, null, null));
+    }
+
+    /** Removes a "by <day>" phrase and returns the deadline date (end of that day), or null. */
+    static LocalDate extractDeadline(StringBuilder residual, LocalDate today) {
+        Matcher m = DEADLINE.matcher(residual);
+        if (!m.find()) {
+            return null;
+        }
+        String word = m.group(1).toLowerCase(Locale.ROOT);
+        residual.replace(m.start(), m.end(), " ");
+        if (word.equals("завтра") || word.equals("tomorrow")) {
+            return today.plusDays(1);
+        }
+        if (word.equals("послезавтра")) {
+            return today.plusDays(2);
+        }
+        if (word.startsWith("конца недели") || word.startsWith("end of")) {
+            return today.with(java.time.temporal.TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        }
+        Matcher dm = DATE_NUMERIC.matcher(word);
+        if (dm.matches()) {
+            int year = dm.group(3) == null ? today.getYear() : normalizeYear(Integer.parseInt(dm.group(3)));
+            try {
+                LocalDate d = LocalDate.of(year, Integer.parseInt(dm.group(2)), Integer.parseInt(dm.group(1)));
+                return d.isBefore(today) && dm.group(3) == null ? d.plusYears(1) : d;
+            } catch (java.time.DateTimeException e) {
+                return null;
+            }
+        }
+        for (Map.Entry<Pattern, DayOfWeek> e : DAY_WORDS.entrySet()) {
+            if (e.getKey().matcher(word).find()) {
+                LocalDate d = today.with(java.time.temporal.TemporalAdjusters.next(e.getValue()));
+                return d;
+            }
+        }
+        return null;
     }
 
     private static Integer extractMinutes(StringBuilder residual) {

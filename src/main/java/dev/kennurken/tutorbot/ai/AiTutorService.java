@@ -1,5 +1,6 @@
 package dev.kennurken.tutorbot.ai;
 
+import dev.kennurken.tutorbot.ai.dto.GoalPlan;
 import dev.kennurken.tutorbot.ai.dto.SkipAnalysis;
 import dev.kennurken.tutorbot.ai.dto.TaskIntentResult;
 import dev.kennurken.tutorbot.ai.dto.VerificationContext;
@@ -83,6 +84,13 @@ public class AiTutorService {
         String userPrompt = "user_language: " + user.getLanguage() + "\ntask: " + taskTitle + "\nreason: " + reason + "\n";
         return call(AiCall.of("skip_analysis", Prompts.SKIP_ANALYSIS_VERSION, Prompts.SKIP_ANALYSIS_SYSTEM,
                 userPrompt, SkipAnalysis.class, user.getId()));
+    }
+
+    public Optional<GoalPlan> decomposeGoal(User user, String goalTitle, java.util.List<String> knownSubjects) {
+        String userPrompt = "user_language: " + user.getLanguage() + "\ngoal: " + goalTitle
+                + "\nsubjects_already_studied: " + knownSubjects + "\n";
+        return call(new AiCall<>("goal_plan", Prompts.GOAL_PLAN_VERSION, Prompts.GOAL_PLAN_SYSTEM, userPrompt,
+                GoalPlan.class, user.getId(), 1500, 0.4));
     }
 
     private <T> Optional<T> call(AiCall<T> call) {

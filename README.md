@@ -41,10 +41,13 @@ Principle: **strict with behaviour, respectful toward the person.** The system m
 | Anti-gaming | Too-short answers are bounced before a model call; the examiner is prompted to be skeptical; inconsistent verdicts (PASS on low-scored answers) are downgraded by the backend. |
 | Knowledge profile | Per subject/topic: mastery estimate, confidence, sample count, forgetting-curve retention, *review recommended* flags. |
 | Consequences | User-defined, bounded: +N min to the next session of the same subject (capped), a 20-min review task after a failed exam. Never stacked: repeated misses trip **overload detection** → 24 h recovery mode. |
-| Planner | `/today` ranks the day by priority, deadline, size; defers what does not fit your limits; one small task in recovery mode. Morning plan message. |
+| Planner | `/today` ranks the day by priority, deadline, size; defers what does not fit your limits; one small task in recovery mode. Morning plan and evening summary messages. Deadlines in plain words ("до пятницы", "by Friday"). |
+| Daily quiz | Once a day, 3 recall questions on the topic whose estimated retention dropped the most (retrieval practice). Ignoring it is free. |
+| Goals | `/goals plan <id>`: the model breaks a goal into 6–12 verifiable steps, you confirm, one task per day is scheduled. Progress per goal. |
+| Quiet hours | Nudges are held between e.g. 23:00 and 08:00 (task starts you chose yourself still fire). |
 | Weekly review | Sunday evening (and `/review`): commitments vs started vs verified, best/worst time windows, long-task completion, per-subject scores, most common skip reason, AI cost — plus a model-written narrative with reasons for each recommendation. |
 | Human override | `/pause 1h|today|24h|off`, `/settings consequences off`, three tones (NORMAL / STRICT / HARDCORE) that change wording only. |
-| Audit | Every transition in `task_events`; every model call in `ai_interactions` with prompt version, model, tokens, cost. |
+| Audit | Every transition in `task_events` (`/history <id>` shows it); every model call in `ai_interactions` with prompt version, model, tokens, cost. |
 
 ## Architecture in one picture
 
@@ -102,7 +105,9 @@ Without any keys the bot still boots: `AI_PROVIDER=fake` gives a deterministic e
 /start_task [id]   start                        /goals      long-term goals
 /done [id]  report done → verification          /settings   mode, timezone, limits, consequences
 /skip [id]  skip with a reason                  /pause      pause accountability
-/reschedule id when · /cancel id · /recurring · /abandon (stop a verification)
+/reschedule id when · /cancel id · /history id · /recurring · /abandon (stop a verification)
+/goals plan id [19:00]   break a goal into daily tasks
+/settings quiet 23:00-08:00 · evening 21:30 · quiz 13:00 · (any of them: off)
 ```
 
 Free text without a command is treated as a task description and confirmed with buttons.
@@ -126,8 +131,8 @@ Tuning knobs (reminder ladder, grace period, question counts, overload threshold
 ## Tests
 
 ```bash
-./mvnw test      # 52 unit tests, no database
-./mvnw verify    # + 15 integration tests against PostgreSQL (profile "test", db tutorbot_test)
+./mvnw test      # 56 unit tests, no database
+./mvnw verify    # + 21 integration tests against PostgreSQL (profile "test", db tutorbot_test)
 ```
 
 Integration tests cover the full loop (create → notify → start → done → exam → pass → knowledge),
@@ -146,10 +151,11 @@ and the morning routine. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
 ## Status
 
-MVP 1 + MVP 2 + the core of MVP 3 are implemented (tasks, scheduler, notifications, recurring
-tasks, verification, knowledge tracking, consequences with overload protection, planner, weekly
-review, analytics). Not yet: entertainment blocking integrations, voice answers, calendar sync,
-web dashboard, multi-instance scheduling. Roadmap in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#k-roadmap).
+MVP 1 + MVP 2 + MVP 3 are implemented (tasks, scheduler, notifications, recurring tasks,
+verification, knowledge tracking with daily retrieval quiz, consequences with overload
+protection, planner, quiet hours, evening summary, goal decomposition, weekly review, event
+history). Not yet: voice answers, entertainment blocking integrations, calendar sync, web
+dashboard, multi-instance scheduling. Roadmap in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#k-roadmap).
 
 ## License
 

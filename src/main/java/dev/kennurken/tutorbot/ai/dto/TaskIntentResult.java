@@ -24,6 +24,8 @@ public record TaskIntentResult(
             @Pattern(regexp = "CRITICAL|HIGH|MEDIUM|LOW|OPTIONAL") String priority,
             /** ISO local date-time in the user's zone, e.g. 2026-09-22T19:00 */
             String scheduledAtLocal,
+            /** ISO local date (deadline day) in the user's zone, e.g. 2026-09-26, or null */
+            String deadlineLocal,
             Integer durationMinutes,
             /** Upper-case DayOfWeek names for recurring tasks */
             List<String> recurrenceDays,
