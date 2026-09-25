@@ -1,5 +1,7 @@
 # tutorbot — AI accountability tutor for Telegram
 
+[![CI](https://github.com/Kennurken/tutorbot/actions/workflows/ci.yml/badge.svg)](https://github.com/Kennurken/tutorbot/actions/workflows/ci.yml)
+
 > Turn intentions into verified actions.
 
 A Telegram bot that is a planner, an external accountability loop and an AI examiner at once.
